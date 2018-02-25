@@ -1,0 +1,23 @@
+{
+  "name": "codex",
+  "version": "1.0.0",
+  "description": "A service for managing reference snippets",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node",
+    "Express",
+    "MongoDB"
+  ],
+  "author": "Cameron Pavey <cpave3@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "crypto": "^1.0.1",
+    "express": "^4.16.2",
+    "mongoose": "^5.0.7",
+    "mongoose-unique-validator": "^2.0.0"
+  }
+}
