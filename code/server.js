@@ -30,6 +30,7 @@ mongoose.connection.once('open', () => {
     console.log(messages.database.connectionSuccess);
 });
 
+
 // Define a simple route
 app.get('/', (req, res) => {
     res.json({'message': 'Hello World'})
@@ -37,6 +38,9 @@ app.get('/', (req, res) => {
 
 // Import all Routes
 require('./app/routes/user.routes.js')(app);
+
+// Passport configuration
+require('./config/passport.config.js');
 
 // listen for requests
 app.listen(appConfig.general.port, () => {

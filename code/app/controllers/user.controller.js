@@ -4,21 +4,24 @@ const User = require('../models/user.model.js');
 
 exports.create = (req, res) => {
     // Create and save
-    if(!req.body.content) {
-        res.status(400).send({message: 'User can not be empty'});
+    if(!req.body.username || !req.body.email || !req.body.password) {
+        res.status(400).send({message: 'User can not be empty', reqBody: req.body});
     }
 
     const user = new User({
         email: req.body.email,
-        username: req.body.username
+        username: req.body.username,
     });
 
+    user.setPassword(req.body.password, user);
+
     user.save((err, data) => {
-        console.log('[#] ' + data);
+        
         if(err) {
             console.log('[!] ' + err);
-            res.status(500).send({message: 'An unknown error has occured while creating the user.'});
+            res.status(500).send({message: err});
         } else {
+            console.log('[#] ' + data);
             res.send(data);
         }
     });
@@ -44,6 +47,33 @@ exports.findOne = (req, res) => {
             res.send(data);
         }
     });
+};
+
+exports.login = (req, res) => {
+    //take the standard login details and output the JWT
+    if(!req.body.username || !req.body.password) {
+        res.status(400).send({ message: 'Username and Password required' });
+    } else {
+        User.findOne({ username: req.body.username}, (err, user) => {
+            if (err) {
+                console.log('[!] ' + err);
+                res.status(500).send({success: false, message: err});
+            } else {
+                if(user.validPassword(req.body.password)) {
+                    res.send(user);
+                } else {
+                    res.status(401).send({ success: false, message: 'Username or Password incorrect' });
+                }
+            }
+            //if(err) {
+            //    res.status(500).send({ success: false, message: err })
+            //} else if(user.validPassword(req.body.password)) {
+            //    res.send(user.toAuthJSON);
+            //} else {
+            //    res.status(401).send({ message: 'Username or Password is incorrect' });
+            //}
+        }); 
+    }
 };
 
 exports.update = (req, res) => {

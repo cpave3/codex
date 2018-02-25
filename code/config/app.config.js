@@ -3,6 +3,7 @@ module.exports = {
         url: 'mongodb://mongo:27017/codex'
     },
     general: {
-        port: 8080
+        port: 8080,
+        secret: 'secret'
     }
     };
