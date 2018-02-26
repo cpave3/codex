@@ -11,9 +11,8 @@ exports.create = (req, res) => {
     const user = new User({
         email: req.body.email,
         username: req.body.username,
+        password: req.body.password
     });
-
-    user.setPassword(req.body.password, user);
 
     user.save((err, data) => {
         
@@ -49,7 +48,7 @@ exports.findOne = (req, res) => {
     });
 };
 
-exports.login = (req, res) => {
+exports.login = function(req, res) {
     //take the standard login details and output the JWT
     if(!req.body.username || !req.body.password) {
         res.status(400).send({ message: 'Username and Password required' });
@@ -59,11 +58,16 @@ exports.login = (req, res) => {
                 console.log('[!] ' + err);
                 res.status(500).send({success: false, message: err});
             } else {
-                if(user.validPassword(req.body.password)) {
-                    res.send(user);
-                } else {
-                    res.status(401).send({ success: false, message: 'Username or Password incorrect' });
-                }
+                user.comparePassword(req.body.password, function(err, isMatch) {
+                    if (err) {
+                        console.log('[!] ' + err);
+                    }
+                    if (isMatch) {
+                        res.send(user.toAuthJSON());
+                    } else {
+                        res.status(500).send({ message: 'AU001: Something went wrong' });
+                    }
+                }); 
             }
             //if(err) {
             //    res.status(500).send({ success: false, message: err })
