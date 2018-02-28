@@ -14,6 +14,7 @@ module.exports = (apiRoutes) => {
     // Accepts a username, password and email, creates and returns a new user
     // TODO
 
+    require('./user.routes.js')(apiRoutes);
     // PLACE ALL UNSECURED ROUTES ABOVE THIS POINT
     apiRoutes.use((req, res, next) => {
         // Check for a token
@@ -43,5 +44,4 @@ module.exports = (apiRoutes) => {
     });
     // ALL SECURE ROUTES BELOW THISE POINT
 
-    require('./user.routes.js')(apiRoutes);
 };
