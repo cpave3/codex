@@ -2,7 +2,7 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const apiRoutes = express.Router();
 // Create express app
 const app = express();
 
@@ -37,7 +37,9 @@ app.get('/', (req, res) => {
 });
 
 // Import all Routes
-require('./app/routes/user.routes.js')(app);
+require('./app/routes/v1.routes.js')(apiRoutes);
+app.use('/api/v1', apiRoutes);
+//require('./app/routes/user.routes.js')(app);
 
 // Passport configuration
 require('./config/passport.config.js');

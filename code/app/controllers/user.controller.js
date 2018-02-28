@@ -25,7 +25,7 @@ exports.register = (req, res) => {
         // TODO: Implement more verbose error handling here
         if(err) {
             console.log('[!] ' + err);
-            res.status(500).send({message: err});
+            res.status(500).send({errors: err.errors, message: err.message, success: false});
         } else {
             console.log('[#] ' + data);
             res.send(data);
