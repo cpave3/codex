@@ -2,12 +2,18 @@
 
 const User = require('../models/user.model.js');
 
-exports.create = (req, res) => {
-    // Create and save
+exports.register = (req, res) => {
+    // Take the input of a new user request, validate it and if successful, create a new user.
     if(!req.body.username || !req.body.email || !req.body.password) {
+        // If one of the 3 required fields are empty, reject the request
+        // TODO: Add more detail here about why the request was rejected, specifically
         res.status(400).send({message: 'User can not be empty', reqBody: req.body});
     }
 
+    //TODO: Should have input validation here, before we insert the request data into the model
+
+    // If everything is okay with the request, create a new user object
+    // Password gets hashed in the pre.save user middleware
     const user = new User({
         email: req.body.email,
         username: req.body.username,
@@ -16,6 +22,7 @@ exports.create = (req, res) => {
 
     user.save((err, data) => {
         
+        // TODO: Implement more verbose error handling here
         if(err) {
             console.log('[!] ' + err);
             res.status(500).send({message: err});

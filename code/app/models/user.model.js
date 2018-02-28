@@ -32,6 +32,7 @@ const UserSchema = mongoose.Schema({
 });
 
 // Password hashing middleware
+// This gets executed before the model is saved
 UserSchema.pre('save', function(next) {
     const user = this;
     if (!user.isModified('password')) return next();
