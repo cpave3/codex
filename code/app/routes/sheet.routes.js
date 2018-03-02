@@ -5,11 +5,11 @@ module.exports = (app) => {
 
     app.post('/sheets', sheets.create);
 
-    app.get('/sheets', sheets.findAll);
+    app.get('/:username/sheets', sheets.findAll);
 
-    app.get('/sheets/:sheetId', sheets.findOne);
+    app.get('/:username/sheets/:sheetName', sheets.findOne);
 
-    app.put('/sheets/:sheetId', sheets.update);
+    app.put('/:username/sheets/:sheetName', sheets.update);
 
-    app.delete('/sheets/:sheetId', sheets.delete);
+    app.delete('/:username/sheets/:sheetId', sheets.delete);
 };

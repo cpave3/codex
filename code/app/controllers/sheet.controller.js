@@ -1,32 +1,91 @@
 'use strict';
 
-const Note = require('../models/sheet.model.js');
+const Sheet = require('../models/sheet.model.js');
 
 exports.create = (req, res) => {
-    // Create and save
-    if(!req.body.content) {
-        res.status(400).send({message: 'Note can not be empty'});
+    
+    // TODO
+    // We are creating a new sheet, bound to the requesting User.
+    // We need to go through a number of steps to make this method robust
+    // 1. Validate the user token (handled in middleware)
+    // 2. Verify that the request contains the required fields (Name(String)*, Description(text)=null, Public(bool)=false)
+    // 3. Validate that this user does not already have a sheet with this name
+    // 4. Create a new instance of the model and fill it with the data
+    // 5. Save it to the DB with a reference to the owner-user
+    
+    let success = true;
+    let message = '';
+    let code  = 200;
+
+    if (!req.body.name) {
+        // Name is required, but description defaults to null, and public defaults to false.
+        success = false;
+        message = `The value of 'name' cannot be null`;
+        code  = 400;
+    } else {
+        // Check that the other fields are defaulted correctly.
+        if (req.body.public != true) req.body.public = false;
+        if (!req.body.description) req.body.description = null;
     }
 
-    const sheet = new Note({
-        title: req.body.title || 'Untitled Note',
-        content: req.body.content
-    });
+    if (success) {
+        // Check that the user does not currently have this sheet name in use.
+        Sheet.count({ name: req.body.name, user: req.decoded.id }, (err, sheet) => {
+            console.log(`Query count: ${sheet}`);
+            if (err) {
+                console.log(`[!] ${err}`);
+                success = false;
+                message = err;
+                code    = 500;
+            } else if (sheet > 0) {
+                console.log(`[!] User ${req.decoded.username} attempted to create a sheet with a duplicate name.`);
+                success = false;
+                message = `The name ${req.body.name} is already in use. Please use another.`;
+                code    = 400;
+            }
+        });
+    }
 
-    sheet.save((err, data) => {
-        console.log('[#] ' + data);
-        if(err) {
-            console.log('[!] ' + err);
-            res.status(500).send({message: 'An unknown error has occured while creating the sheet.'});
-        } else {
-            res.send(data);
-        }
+    if (success) {
+        // Create a new sheet for the User here.
+        const sheet = new Sheet({
+            name: req.body.name,
+            description: req.body.description,
+            public: req.body.public,
+            user: req.decoded.id
+        });
+
+        console.log(sheet);
+
+        sheet.save((err, sheet) => {
+            if (err) {
+                console.log(err);
+                success = false;
+                message = err;
+                code = 500;
+            }
+
+            if (success) {
+                console.log(success);
+                return res.status(201).json({
+                    success,
+                    data: sheet
+                });                
+            }
+        });
+    }
+
+    return res.status(code).json({
+        success,
+        message
     });
+    //TODO: Fix shit-tier error handling and response loggin
+        
 };
 
 exports.findAll = (req, res) => {
     // find all sheets
-    Note.find((err, sheets) => {
+    Sheet.find((err, sheets) => {
         if(err) {
             res.status(500).send({message: 'An error occured while finding sheets'});
         } else {
@@ -37,7 +96,7 @@ exports.findAll = (req, res) => {
 
 exports.findOne = (req, res) => {
     // find one sheet by ID
-    Note.findById(req.params.sheetId, (err, data) => {
+    Sheet.findById(req.params.sheetId, (err, data) => {
         if(err) {
             res.status(500).send({message: 'An error occured while finding sheet'});
         } else {
@@ -48,7 +107,7 @@ exports.findOne = (req, res) => {
 
 exports.update = (req, res) => {
     // update a sheet
-    Note.findById(req.params.sheetId, (err, sheet) => {
+    Sheet.findById(req.params.sheetId, (err, sheet) => {
         if(err) {
             res.status(500).send({message: 'An error occured while finding sheet'});
         }
@@ -68,11 +127,11 @@ exports.update = (req, res) => {
 
 exports.delete = (req, res) => {
     // delete a sheet
-    Note.remove({ _id:req.params.sheetId }, (err, data) => {
+    Sheet.remove({ _id:req.params.sheetId }, (err, data) => {
         if(err) {
             res.status(500).send({ message: 'Could not delete the sheet with id ' + req.params.sheetId });
         } else {
-            res.send({ message: 'Note deleted' });
+            res.send({ message: 'Sheet deleted' });
         }
     });
 };

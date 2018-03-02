@@ -7,10 +7,10 @@ const SheetSchema = mongoose.Schema({
         lowercase: true,
         match: [/^[a-z0-9]+$/, 'is invalid']
     },
-    user: [{type: Schema.Types.ObjectId, ref: 'User'}],
+    user: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     records: Object
 }, {
     timestamps: true
-}):
+});
 
 module.exports = mongoose.model('Sheet', SheetSchema);
