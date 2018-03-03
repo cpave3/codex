@@ -1,24 +1,24 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 
-const SheetSchema = mongoose.Schema({
+const SnippetSchema = mongoose.Schema({
     name: {
         type: String,
         lowercase: true,
         required: true,
         match: [/^[a-z0-9]+$/, 'is invalid']
     },
-    description: {
+    content: {
         type: String,
-        required: false
+        required: true
     },
-    public: {
-        type: Boolean,
-        default: false
+    tags: {
+        type: Array,
+        require: false
     },
-    user: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+    sheet: [{type: mongoose.Schema.Types.ObjectId, ref: 'Sheet'}],
 }, {
     timestamps: true
 });
 
-module.exports = mongoose.model('Sheet', SheetSchema);
+module.exports = mongoose.model('Snippet', SnippetSchema);
