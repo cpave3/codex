@@ -64,6 +64,12 @@ UserSchema.methods.comparePassword = function(candidatePassword, cb) {
     });
 };
 
+UserSchema.methods.getAllSheets = function(sheetModel) {
+    return sheetModel.find({ user: this.id });
+};
+
+UserSchema.methods.getPublicSheets = function(sheetModel) {};
+
 UserSchema.methods.generateJWT = function() {
     const today = new Date();
     let exp = new Date(today);

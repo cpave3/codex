@@ -7,9 +7,9 @@ module.exports = (app) => {
 
     app.get('/:username/sheets', sheets.findAll);
 
-    app.get('/:username/sheets/:sheetName', sheets.findOne);
+    app.get('/:username/sheets/:sheetName', sheets.findOne); // TODO
 
-    app.put('/:username/sheets/:sheetName', sheets.update);
+    app.put('/:username/sheets/:sheetName', sheets.update); // TODO
 
-    app.delete('/:username/sheets/:sheetId', sheets.delete);
+    app.delete('/:username/sheets/:sheetId', sheets.delete); // TODO
 };

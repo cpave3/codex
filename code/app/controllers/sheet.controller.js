@@ -1,17 +1,14 @@
 'use strict';
 
-const Sheet = require('../models/sheet.model.js');
+const _ = require('underscore');
 
+const Sheet = require('../models/sheet.model.js');
+const User  = require('../models/user.model.js'); 
+
+/**
+ * Create a new sheet associated to the requesting user
+ */
 exports.create = (req, res) => {
-    
-    // TODO
-    // We are creating a new sheet, bound to the requesting User.
-    // We need to go through a number of steps to make this method robust
-    // 1. Validate the user token (handled in middleware)
-    // 2. Verify that the request contains the required fields (Name(String)*, Description(text)=null, Public(bool)=false)
-    // 3. Validate that this user does not already have a sheet with this name
-    // 4. Create a new instance of the model and fill it with the data
-    // 5. Save it to the DB with a reference to the owner-user
     
     let success = true;
     let message = '';
@@ -72,15 +69,45 @@ exports.create = (req, res) => {
     }
 };
 
+/**
+* Returns all accessible sheets for a specified user.
+* The requesting user can see all of their own sheets.
+* The requesting user can only see public sheets of other users.
+*/
 exports.findAll = (req, res) => {
-    // find all sheets
-    Sheet.find((err, sheets) => {
-        if(err) {
-            res.status(500).send({message: 'An error occured while finding sheets'});
+    // 1. Validate token (middleware)
+    // 2. Validate requested user exists
+    // 3. If requested user == requesting user, find all sheets
+    // 4. If requested user <> requesting user, show only sheets where public == true 
+    
+    // Determine whether the requested user exists or not
+    User.findOne({ username: req.params.username }, (err, user) => {
+        if (err) {
+            console.log(`[!] ${err}`);
+            res.status(500).json({ success: false, message: err.message });
+        } else if (!user) {
+            message = `Requested user '${req.params.username}' not found.`;
+            console.log(`[!] ${message}`);
+            res.status(404).json({ success: false, message: message });
         } else {
-            res.send(sheets);
+            // We can assume that a matching user was found
+            Sheet.find({ user: user.id }, (err, sheets) => {
+                if (err) {
+                    console.log(`[!] ${err}`);
+                    res.status(500).json({ success: false, message: err.message });
+                } else {
+                    if (user.id != req.decoded.id) {
+                        // The user should only be able to access public sheets, apply a filter
+                        res.status(200).json({ success: true, data: _.where(sheets, { public: true }) });
+                    } else {
+                        // Return all sheets on the user
+                        res.status(200).json({ success: true, data: sheets });
+                    }
+                }
+            });
         }
     });
+
 };
 
 exports.findOne = (req, res) => {
