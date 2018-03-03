@@ -15,15 +15,15 @@ exports.create = (req, res) => {
     
     let success = true;
     let message = '';
-    let code  = 200;
 
     if (!req.body.name) {
         // Name is required, but description defaults to null, and public defaults to false.
         success = false;
         message = `The value of 'name' cannot be null`;
-        code  = 400;
+        res.status(400).json({success, message});
     } else {
         // Check that the other fields are defaulted correctly.
+        if (req.body.public == 'true') req.body.public = true;
         if (req.body.public != true) req.body.public = false;
         if (!req.body.description) req.body.description = null;
     }
@@ -36,51 +36,40 @@ exports.create = (req, res) => {
                 console.log(`[!] ${err}`);
                 success = false;
                 message = err;
-                code    = 500;
+                res.status(500).json({success, message});
             } else if (sheet > 0) {
                 console.log(`[!] User ${req.decoded.username} attempted to create a sheet with a duplicate name.`);
                 success = false;
                 message = `The name ${req.body.name} is already in use. Please use another.`;
-                code    = 400;
+                res.status(400).json({success, message});
             }
+
+           if (success) {
+                // Create a new sheet for the User here.
+                const sheet = new Sheet({
+                    name: req.body.name,
+                    description: req.body.description,
+                    public: req.body.public,
+                    user: req.decoded.id
+                });
+
+                sheet.save((err, sheet) => {
+                    if (err) {
+                        console.log(`[!] ${err}`);
+                        success = false;
+                        message = err
+                        res.status(500).json({success, message});
+                    }
+
+                    if (success) {
+                        console.log(`[*] Record saved for user: ${req.decoded.username}`);
+                        res.status(201).json({success, message: sheet});
+                    }
+                });
+           } 
+
         });
     }
-
-    if (success) {
-        // Create a new sheet for the User here.
-        const sheet = new Sheet({
-            name: req.body.name,
-            description: req.body.description,
-            public: req.body.public,
-            user: req.decoded.id
-        });
-
-        console.log(sheet);
-
-        sheet.save((err, sheet) => {
-            if (err) {
-                console.log(err);
-                success = false;
-                message = err;
-                code = 500;
-            }
-
-            if (success) {
-                console.log(success);
-                return res.status(201).json({
-                    success,
-                    data: sheet
-                });                
-            }
-        });
-    }
-
-    return res.status(code).json({
-        success,
-        message
-    });
-    //TODO: Fix shit-tier error handling and response loggin
-        
 };
 
 exports.findAll = (req, res) => {

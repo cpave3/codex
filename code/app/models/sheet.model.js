@@ -5,7 +5,16 @@ const SheetSchema = mongoose.Schema({
     name: {
         type: String,
         lowercase: true,
+        required: true,
         match: [/^[a-z0-9]+$/, 'is invalid']
+    },
+    description: {
+        type: String,
+        required: false
+    },
+    public: {
+        type: Boolean,
+        default: false
     },
     user: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     records: Object
