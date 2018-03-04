@@ -64,3 +64,12 @@ exports.create = (req, res) => {
         });
     }
 };
+
+/**
+ * Return all snippets from the specified sheet, provided that the sheet belongs to the requester
+ */
+exports.findAll = (req, res) => {
+    // 1. find a sheet with the specified name, belonging to the specified user
+    // 2. if the specified user is not the requesting user, only allow if sheet is public
+    // maybe I should rework everything to be ID based instead...
+};

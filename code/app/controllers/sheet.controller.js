@@ -28,7 +28,6 @@ exports.create = (req, res) => {
     if (success) {
         // Check that the user does not currently have this sheet name in use.
         Sheet.count({ name: req.body.name, user: req.decoded.id }, (err, sheet) => {
-            console.log(`Query count: ${sheet}`);
             if (err) {
                 console.log(`[!] ${err}`);
                 success = false;
