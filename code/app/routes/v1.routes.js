@@ -44,4 +44,5 @@ module.exports = (apiRoutes) => {
     });
     // ALL SECURE ROUTES BELOW THISE POINT
     require('./sheet.routes.js')(apiRoutes);
+    require('./snippet.routes.js')(apiRoutes);
 };
