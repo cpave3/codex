@@ -69,7 +69,23 @@ exports.create = (req, res) => {
  * Return all snippets from the specified sheet, provided that the sheet belongs to the requester
  */
 exports.findAll = (req, res) => {
-    // 1. find a sheet with the specified name, belonging to the specified user
-    // 2. if the specified user is not the requesting user, only allow if sheet is public
-    // maybe I should rework everything to be ID based instead...
+    // 1. find a sheet with the specified id, which either belongs to the requesting user, or is public
+    Sheet.findOne({ _id: req.params.sheetId, $or: [{ public: true }, { user: req.decoded.id }] })
+    .then((sheet) => {
+        if (!sheet) {
+            res.status(404).json({ success: false, message: 'The requested sheet could not be found' });
+            return false;
+        } else {
+            return Snippet.find({ sheet: sheet.id })
+        }
+    })
+    .then((snippets) => {
+        if (snippets) {
+            res.status(200).json({ success: true, data: snippets });
+        }
+    })
+    .catch((err) => {
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
+    });
 };

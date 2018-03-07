@@ -5,7 +5,7 @@ module.exports = (app) => {
 
     app.post('/:sheetName/snippets', snippets.create);
 
-    app.get('/:username/:sheetName/snippets', snippets.findAll); // TODO
+    app.get('/sheets/:sheetId/snippets', snippets.findAll);
 
     //app.get('/:sheetName/snippets/:snippetName', snippets.findOne); // TODO
 
