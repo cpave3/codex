@@ -6,7 +6,7 @@ const User = require('../models/user.model.js');
 const Snippet = require('../models/snippet.model.js');
 const Sheet = require('../models/sheet.model.js');
 
-/**
+/** TODO: Refactor this
  * This method creates a unique snippets within a sheet.
  * The snippet's name must be unique within the sheet.
  * The snippet name and content are required, tags are optional.
@@ -88,4 +88,29 @@ exports.findAll = (req, res) => {
         console.log(`[!] ${err}`);
         res.status(500).json({ success: false, message: err.message });
     });
+};
+
+/**
+ * Finds a single snippet from a specified sheet, and returns all details about the snippet
+ */
+exports.findOne = (req, res) => {
+    // 1. find sheet by ID< verify ownership/public --
+    // 2. find snippet by id, verify accessibility by sheet
+    // 3. return snippet
+    
+    Snippet.findOne({ _id: req.params.snippetId }).
+    populate('sheet').
+    then((snippet) => {
+        if (!snippet || !snippet.sheet || (snippet.sheet.public === true || snippet.sheet.user === req.decoded.id)) {
+            res.status(404).json({ success: false, message: 'The requested snippet could not be found' });
+            return false;
+        } else {
+            res.status(200).json({ success: true, data: snippet });
+        }
+    }).
+    catch((err) => {
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
+    });
+        
 };
