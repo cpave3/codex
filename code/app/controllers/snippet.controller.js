@@ -101,7 +101,7 @@ exports.findOne = (req, res) => {
     Snippet.findOne({ _id: req.params.snippetId }).
     populate('sheet').
     then((snippet) => {
-        if (!snippet || !snippet.sheet || (snippet.sheet.public === true || snippet.sheet.user === req.decoded.id)) {
+        if (!snippet || !snippet.sheet || !(snippet.sheet.public === true || snippet.sheet.user === req.decoded.id)) {
             res.status(404).json({ success: false, message: 'The requested snippet could not be found' });
             return false;
         } else {
@@ -113,4 +113,40 @@ exports.findOne = (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     });
         
+};
+
+/**
+ * Takes input values and updates the specified snippet with them
+ */
+exports.update = (req, res) => {
+    // 1. First we need to validate any incomming inputs and maybe build them into an input object
+    req.newData = {};  
+    if (req.body.name) req.newData.name = req.body.name;
+    if (req.body.content) req.newData.content = req.body.content;
+
+    // 2. find the snippet, then its sheet. validate access to the sheet
+    Snippet.findOne({ _id: req.params.snippetId }).populate('sheet').
+    then((snippet) => {
+        // Verify that we have access to this snippet via its sheet
+        if (!snippet || !snippet.sheet || (snippet.sheet.public === true || snippet.sheet.user === req.decoded.id)) {
+            res.status(403).json({ success: false, message: 'You do not have access to this snippet\'s sheet' });
+            return false;
+        } else {
+            return snippet;
+        }
+    }).
+    then((snippet) => {
+        // 3. update the snippet
+        if (snippet) {
+            return Snippet.findOneAndUpdate({ _id: req.params.snippetId }, req.newData);
+        }
+    }).
+    then((snippet) => {
+        res.status(200).json({ success: true, message: 'Snippet updated successfully' });
+    }).
+    catch((err) => {
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
+    });
+
 };

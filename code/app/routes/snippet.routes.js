@@ -7,9 +7,9 @@ module.exports = (app) => {
 
     app.get('/sheets/:sheetId/snippets', snippets.findAll);
 
-    app.get('/snippets/:snippetId', snippets.findOne); // TODO
+    app.get('/snippets/:snippetId', snippets.findOne);
 
-    //app.put('/:sheetName/snippets/:snippetName', snippets.update); // TODO
+    app.patch('/snippets/:snippetId', snippets.update); // TODO
 
     //app.delete('/:sheetName/snippets/:snippetId', snippets.delete); // TODO
 };
