@@ -9,7 +9,7 @@ module.exports = (app) => {
 
     app.get('/sheets/:sheetId', sheets.findOne); // TODO: Find a single sheet by ID (if allowed to access)
 
-    app.put('/sheets/:sheetId', sheets.update); // TODO: Updates the name and publicity status of an owned sheet
+    app.patch('/sheets/:sheetId', sheets.update); // TODO: Updates the name and publicity status of an owned sheet
 
     app.delete('/sheets/:sheetId', sheets.delete); // TODO: Deletes an owned sheet
 };

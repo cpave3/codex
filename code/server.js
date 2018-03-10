@@ -3,6 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const apiRoutes = express.Router();
+const chalk = require('chalk');
 // Create express app
 const app = express();
 
@@ -27,7 +28,7 @@ mongoose.connection.on('error', () => {
 });
 
 mongoose.connection.once('open', () => {
-    console.log(messages.database.connectionSuccess);
+    console.log(chalk.green(messages.database.connectionSuccess));
 });
 
 
@@ -46,5 +47,5 @@ require('./config/passport.config.js');
 
 // listen for requests
 app.listen(appConfig.general.port, () => {
-    console.log('[*] Listening on ' + appConfig.general.port);
+    console.log(chalk.green('[*] Listening on ' + appConfig.general.port));
 });

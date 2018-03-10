@@ -79,34 +79,43 @@ exports.findAll = (req, res) => {
 
 };
 
+/**
+ * Find a single sheet and return details about it.
+ */
 exports.findOne = (req, res) => {
-    // find one sheet by ID
-    Sheet.findById(req.params.sheetId, (err, data) => {
-        if(err) {
-            res.status(500).send({message: 'An error occured while finding sheet'});
-        } else {
-            res.send(data);
-        }
+    // 1. Verify access rights to sheet
+    Sheet.findOne({ _id: req.params.sheetId, $or: [{public: true}, {user: req.decoded.id}] }).
+    then((sheet) => {
+        res.status(200).json({ success: true, data: sheet });
+    }).
+    catch((err) => {
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
     });
 };
 
+/**
+ * Updates the name, description, or publicity of a sheet
+ */
 exports.update = (req, res) => {
-    // update a sheet
-    Sheet.findById(req.params.sheetId, (err, sheet) => {
-        if(err) {
-            res.status(500).send({message: 'An error occured while finding sheet'});
+    // 1. validate input
+    // 2. verify ownership
+    // 3. apply changes and save
+    if (req.body.public) {
+        (req.body.public === 'true' || req.body.public === 'True') ? req.body.public = true : req.body.public = false;
+    }
+
+    Sheet.findOneAndUpdate({ _id: req.params.sheetId, user: req.decoded.id }, req.body).
+    then((sheet) => {
+        if (sheet) {
+            res.status(200).json({ success: true, data: `Sheet successfully updated` });
+        } else {
+            res.status(404).json({ success: false, message: `The requested sheet could not be found` });
         }
-
-        sheet.title = req.body.title;
-        sheet.content = req.body.content;
-
-        sheet.save((err, data) => {
-            if(err) {
-               res.status(500).send({ message: 'Could not update sheet with id ' + req.params.sheetId });
-            } else {
-                res.send(data);
-            }
-        });
+    }).
+    catch((err) => {
+        console.log(`[!] ${err}`);
+        res.staus(500).json({ success: false, message: err.message });
     });
 };
 
