@@ -26,4 +26,4 @@ services:
             - 8080:8080
         links:
             - mongo:mongo
-        command: nodemon /app/server.js
+        command: npm start
