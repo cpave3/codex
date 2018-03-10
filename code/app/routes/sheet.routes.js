@@ -3,7 +3,7 @@ module.exports = (app) => {
 
     app.post('/sheets', sheets.create); // Creates a sheet associated to the requesting user
 
-    app.get('/users/:username/sheets', sheets.findAll); // Find all public sheets associated to a user
+    app.get('/users/:userId/sheets', sheets.findAll); // Find all public sheets associated to a user
     
     app.get('/sheets', sheets.findAll); // find all sheets associated to the requesting user
 

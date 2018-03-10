@@ -12,22 +12,24 @@ exports.create = (req, res) => {
     // 1. Validate inputs
     if (!req.body.name) {
         // Name is required, do an error
+        res.status(400).json({ success: false, message: `the 'name' field is required` });
     } else {
         // Check/default other fields
         if (req.body.public === 'true' || req.body.public === 'True') req.body.public = true;
         if (req.body.public != true) req.body.public = false;
         if (!req.body.description) req.body.description = null;
 
+        // 2. Validate existence of desired sheet name
         Sheet.findOne({ name: req.body.name, user: req.decoded.id }).
         then((sheet) => {
             if (!sheet) {
+                // 3. Create and serve sheet
                 const newSheet = new Sheet({
                     name: req.body.name,
                     description: req.body.description,
                     public: req.body.public,
                     user: req.decoded.id
                 });
-
                 return newSheet.save();
             } else {
                 res.status(400).json({ success: false, message: `You already have a sheet with this name.` });
@@ -44,11 +46,6 @@ exports.create = (req, res) => {
             res.status(500).json({ success: false, message: err.message });
         });
     }
-
-    // 2. Validate existence of desired sheet name
-    
-    
-    // 3. Create and serve sheet
 };
 
 /**
@@ -57,37 +54,27 @@ exports.create = (req, res) => {
 * The requesting user can only see public sheets of other users.
 */
 exports.findAll = (req, res) => {
-    // 1. Validate token (middleware)
-    // 2. Validate requested user exists
-    // 3. If requested user == requesting user, find all sheets
-    // 4. If requested user <> requesting user, show only sheets where public == true 
-    
     // Determine whether the requested user exists or not
-    User.findOne({ username: req.params.username }, (err, user) => {
-        if (err) {
-            console.log(`[!] ${err}`);
-            res.status(500).json({ success: false, message: err.message });
-        } else if (!user) {
-            message = `Requested user '${req.params.username}' not found.`;
-            console.log(`[!] ${message}`);
-            res.status(404).json({ success: false, message: message });
+    if (!req.params.userId) req.params.userId = req.decoded.id;
+    Sheet.find({ user: req.params.userId }).
+    then((sheets) => {
+        if (sheets) {
+            if (req.params.userId === req.decoded.id) {
+                // same user, show all
+                res.status(200).json({ success: true, data: sheets });
+            } else {
+                // diff user, show public
+                res.status(200).json({ success: true, data: _.where(sheets, { public: true }) });
+            }    
         } else {
-            // We can assume that a matching user was found
-            Sheet.find({ user: user.id }, (err, sheets) => {
-                if (err) {
-                    console.log(`[!] ${err}`);
-                    res.status(500).json({ success: false, message: err.message });
-                } else {
-                    if (user.id != req.decoded.id) {
-                        // The user should only be able to access public sheets, apply a filter
-                        res.status(200).json({ success: true, data: _.where(sheets, { public: true }) });
-                    } else {
-                        // Return all sheets on the user
-                        res.status(200).json({ success: true, data: sheets });
-                    }
-                }
-            });
+            // no sheets found, 404
+            res.status(404).json({ success: false, message: 'No sheets could be found for this request' });
         }
+    }).
+    catch((err) => {
+        //err
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
     });
 
 };
