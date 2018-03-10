@@ -2,8 +2,9 @@
 
 const _ = require('underscore');
 
-const Sheet = require('../models/sheet.model.js');
-const User  = require('../models/user.model.js'); 
+const Sheet   = require('../models/sheet.model.js');
+const User    = require('../models/user.model.js'); 
+const Snippet = require('../models/snippet.model.js');
 
 /**
  * Create a new sheet associated to the requesting user
@@ -98,9 +99,6 @@ exports.findOne = (req, res) => {
  * Updates the name, description, or publicity of a sheet
  */
 exports.update = (req, res) => {
-    // 1. validate input
-    // 2. verify ownership
-    // 3. apply changes and save
     if (req.body.public) {
         (req.body.public === 'true' || req.body.public === 'True') ? req.body.public = true : req.body.public = false;
     }
@@ -119,13 +117,23 @@ exports.update = (req, res) => {
     });
 };
 
+/**
+ * Hard Deletes a sheet and all associated snippets
+ */
 exports.delete = (req, res) => {
-    // delete a sheet
-    Sheet.remove({ _id:req.params.sheetId }, (err, data) => {
-        if(err) {
-            res.status(500).send({ message: 'Could not delete the sheet with id ' + req.params.sheetId });
+    Sheet.findOneAndRemove({ _id: req.params.sheetId, user: req.decoded.id }).
+    then((sheet) => {
+        if (sheet) {
+            return Snippet.remove({ sheet: req.params.sheetId })
         } else {
-            res.send({ message: 'Sheet deleted' });
+            res.status(404).json({ success: false, message: `The requested sheet could not be found` });
         }
+    }).
+    then(() => {
+        res.status(204);
+    }).
+    catch((err) => {
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
     });
 };
