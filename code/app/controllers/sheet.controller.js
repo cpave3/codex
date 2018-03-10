@@ -9,63 +9,46 @@ const User  = require('../models/user.model.js');
  * Create a new sheet associated to the requesting user
  */
 exports.create = (req, res) => {
-    
-    let success = true;
-    let message = '';
-
+    // 1. Validate inputs
     if (!req.body.name) {
-        // Name is required, but description defaults to null, and public defaults to false.
-        success = false;
-        message = `The value of 'name' cannot be null`;
-        res.status(400).json({success, message});
+        // Name is required, do an error
     } else {
-        // Check that the other fields are defaulted correctly.
-        if (req.body.public == 'true') req.body.public = true;
+        // Check/default other fields
+        if (req.body.public === 'true' || req.body.public === 'True') req.body.public = true;
         if (req.body.public != true) req.body.public = false;
         if (!req.body.description) req.body.description = null;
-    }
 
-    if (success) {
-        // Check that the user does not currently have this sheet name in use.
-        Sheet.count({ name: req.body.name, user: req.decoded.id }, (err, sheet) => {
-            if (err) {
-                console.log(`[!] ${err}`);
-                success = false;
-                message = err;
-                res.status(500).json({success, message});
-            } else if (sheet > 0) {
-                console.log(`[!] User ${req.decoded.username} attempted to create a sheet with a duplicate name.`);
-                success = false;
-                message = `The name ${req.body.name} is already in use. Please use another.`;
-                res.status(400).json({success, message});
-            }
-
-           if (success) {
-                // Create a new sheet for the User here.
-                const sheet = new Sheet({
+        Sheet.findOne({ name: req.body.name, user: req.decoded.id }).
+        then((sheet) => {
+            if (!sheet) {
+                const newSheet = new Sheet({
                     name: req.body.name,
                     description: req.body.description,
                     public: req.body.public,
                     user: req.decoded.id
                 });
 
-                sheet.save((err, sheet) => {
-                    if (err) {
-                        console.log(`[!] ${err}`);
-                        success = false;
-                        message = err
-                        res.status(500).json({success, message});
-                    }
-
-                    if (success) {
-                        console.log(`[*] Record saved for user: ${req.decoded.username}`);
-                        res.status(201).json({success, message: sheet});
-                    }
-                });
-           } 
-
+                return newSheet.save();
+            } else {
+                res.status(400).json({ success: false, message: `You already have a sheet with this name.` });
+                return false;
+            }
+        }).
+        then((sheet) => {
+            if (sheet) {
+                res.status(201).json({ success: true, data: sheet });
+            }
+        }).
+        catch((err) => {
+            console.log(`[!] ${err}`);
+            res.status(500).json({ success: false, message: err.message });
         });
     }
+
+    // 2. Validate existence of desired sheet name
+    
+    
+    // 3. Create and serve sheet
 };
 
 /**
