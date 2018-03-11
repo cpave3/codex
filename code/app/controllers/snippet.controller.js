@@ -92,6 +92,7 @@ exports.findOne = (req, res) => {
     Snippet.findOne({ _id: req.params.snippetId }).
     populate('sheet').
     then((snippet) => {
+        console.log(snippet);
         if (!snippet || !snippet.sheet || !(snippet.sheet.public === true || snippet.sheet.user === req.decoded.id)) {
             res.status(404).json({ success: false, message: 'The requested snippet could not be found' });
             return false;
@@ -140,4 +141,31 @@ exports.update = (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     });
 
+};
+
+/**
+ * Deletes a snippet from an owned sheet
+ */
+exports.delete = (req, res) => {
+    Snippet.findOne({ _id: req.params.snippetId }).
+    populate('sheet').
+    then((snippet) => {
+        if (!snippet) {
+            res.status(404).json({ success: false, message: `The requested snippet could not be found` });
+            return false;
+        }
+        if (snippet.sheet.user == req.decoded.id) {
+            snippet.remove();
+            res.status(204).json({ success: true, message: `Snippet successfully deleted` });
+            return true;
+        } else {
+            console.log(snippet.sheet.user, req.decoded.id);
+            res.status(403).json({ success: false, message: `You are not authorised to perform this operation on this snippet` });
+            return false;
+        }
+    }).
+    catch((err) => {
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
+    });
 };

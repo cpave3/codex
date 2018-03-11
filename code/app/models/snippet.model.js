@@ -16,7 +16,7 @@ const SnippetSchema = mongoose.Schema({
         type: Array,
         require: false
     },
-    sheet: [{type: mongoose.Schema.Types.ObjectId, ref: 'Sheet'}],
+    sheet: {type: mongoose.Schema.Types.ObjectId, ref: 'Sheet'},
 }, {
     timestamps: true
 });

@@ -9,7 +9,7 @@ module.exports = (app) => {
 
     app.get('/snippets/:snippetId', snippets.findOne);
 
-    app.patch('/snippets/:snippetId', snippets.update); // TODO
+    app.patch('/snippets/:snippetId', snippets.update);
 
-    //app.delete('/:sheetName/snippets/:snippetId', snippets.delete); // TODO
+    app.delete('/snippets/:snippetId', snippets.delete);
 };
