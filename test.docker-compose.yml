@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+    mongo:
+        image: mongo:latest
+        container_name: node_mongo
+        ports:
+            - 27017:27017
+        environment:
+            - MONGO_DATA_DIR=/data/db
+            - MONGO_LOG_DIR=/dev/null
+        volumes:
+            - ./docker/data/db:/data/db
+        command: mongod --smallfiles --logpath=/dev/null
+
+    app:
+        build: ./docker/app/
+        container_name: node_app
+        user: 'node'
+        working_dir: /app
+        environment:
+            - NODE_ENV=development
+        volumes:
+            - ./code:/app
+        ports:
+            - 8080:8080
+        links:
+            - mongo:mongo
+        command: npm test

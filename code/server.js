@@ -49,3 +49,5 @@ require('./config/passport.config.js');
 app.listen(appConfig.general.port, () => {
     console.log(chalk.green('[*] Listening on ' + appConfig.general.port));
 });
+
+module.exports = app;
