@@ -1,0 +1,42 @@
+FORMAT: 1A
+HOST: http://localhost:8080/api/v1
+
+# Codex API
+
+Codex is a service for storing quick access snippets to help your reference the important bits of programs without wading through page after page.
+
+## User Registration [/register]
+
+### Register [POST]
+This endpoint is not secured. New accounts can be created from this endpoint
+
++ Request (application/json)
+
+    {
+        "username": "newuser",
+        "email": "newuser@example.com",
+        "password": "password"
+    }
+
++ Response 201 (application/json)
+
+    {
+    
+    }
+
+
+## User Login [/login]
+
+### Login [POST]
+Submit valid login credentials to get a response containing a JWT which can be used for future requests
+
++ Request (application/json)
+
+    {
+        "username": "newuser",
+        "password": "password"
+    }
+
++ Response 200 (application/json)
+
+    {}
