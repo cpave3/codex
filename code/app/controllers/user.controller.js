@@ -55,36 +55,39 @@ exports.findOne = (req, res) => {
     });
 };
 
-exports.login = function(req, res) {
-    //take the standard login details and output the JWT
+/**
+ * Allows users to submit login credentials to the unsecured api endpoint
+ */
+exports.login = (req, res) => {
+    let authUser;
     if(!req.body.username || !req.body.password) {
-        res.status(400).send({ message: 'Username and Password required' });
-    } else {
-        User.findOne({ username: req.body.username}, (err, user) => {
-            if (err) {
-                console.log('[!] ' + err);
-                res.status(500).send({success: false, message: err});
-            } else {
-                user.comparePassword(req.body.password, function(err, isMatch) {
-                    if (err) {
-                        console.log('[!] ' + err);
-                    }
-                    if (isMatch) {
-                        res.send(user.toAuthJSON());
-                    } else {
-                        res.status(500).send({ message: 'AU001: Something went wrong' });
-                    }
-                }); 
-            }
-            //if(err) {
-            //    res.status(500).send({ success: false, message: err })
-            //} else if(user.validPassword(req.body.password)) {
-            //    res.send(user.toAuthJSON);
-            //} else {
-            //    res.status(401).send({ message: 'Username or Password is incorrect' });
-            //}
-        }); 
-    }
+        res.status(400).send({ message: 'Username or Email and Password required' });
+        return;
+    } 
+    User.findOne({ username: req.body.username})
+    .then((user) => {
+        if (!user) {
+            res.status(403).json({ success: false, message: "Username or password is incorrect." });
+            return;
+        }
+        authUser = user;
+        return user.comparePassword(req.body.password);
+
+    })
+    .then((match) => {
+        if (match === true) {
+            res.status(200).json({ success: true, data: authUser.toAuthJSON() })
+            return;
+        } else if (match === false) {
+            res.status(403).json({ success: false, message: "Username or password is incorrect." });
+            return;
+        }
+    })
+    .catch((err) => {
+        console.log(`[!] ${err}`);
+        res.status(500).json({ success: false, message: err.message });
+    }); 
+    
 };
 
 exports.update = (req, res) => {

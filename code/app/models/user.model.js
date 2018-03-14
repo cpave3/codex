@@ -48,19 +48,13 @@ UserSchema.pre('save', function(next) {
     });
 });
 
-/* Disable old password hashing
- *
-UserSchema.methods.setPassword = (password, user) => {
-    user.salt = crypto.randomBytes(16).toString('hex');
-    user.hash = crypto.pbkdf2Sync(password, user.salt, 10000, 512, 'sha512').toString('hex');
-};
-*/
-
 // Check if the submitted password is the same as the stored one
-UserSchema.methods.comparePassword = function(candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
-        if (err) return cb(err);
-        cb(null, isMatch);
+UserSchema.methods.comparePassword = function(candidatePassword) {
+    return new Promise((resolve, reject) => {
+        bcrypt.compare(candidatePassword, this.password, (err, match) => {
+            if (err) return reject(err);
+            resolve(match);
+        });
     });
 };
 
